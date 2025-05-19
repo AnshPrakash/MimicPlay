@@ -5,3 +5,11 @@ datasets/
 trained_models_highlevel
 
 *.mp4
+
+bddl/
+MimicPlay/
+bddl/
+robomimic/
+robosuite/
+LIBERO/
+
