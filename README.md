@@ -36,7 +36,7 @@ conda activate mimicplay
 The simulation result of MimicPlay is tested on [LIBERO](https://github.com/Lifelong-Robot-Learning/LIBERO), which is a great multitask manipulation simulation based on [robosuite](https://github.com/ARISE-Initiative/robosuite) and latest [MuJoCo](https://github.com/google-deepmind/mujoco). We choose LIBERO due to its utilization of the [BDDL language](https://github.com/StanfordVL/bddl) for goal specification, which facilitates the multitask evaluation for learning from play data.
 ```	
 # Install MuJoCo
-pip install mujoco
+pip install mujoco==3.2.2
 
 # Install robosuite
 git clone https://github.com/ARISE-Initiative/robosuite.git
