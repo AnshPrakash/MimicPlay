@@ -55,6 +55,9 @@ import robomimic.utils.file_utils as FileUtils
 import robomimic.utils.env_utils as EnvUtils
 from robomimic.envs.env_base import EnvBase
 
+# from libero.libero.envs.bddl_base_domain import TASK_MAPPING # https://github.com/j96w/MimicPlay/issues/16#issuecomment-2892429157
+from libero.libero.envs.regions import *
+
 
 def extract_trajectory(
     env, 
