@@ -43,6 +43,7 @@ from robomimic.utils.log_utils import PrintLogger, DataLogger
 from mimicplay.configs import config_factory
 from mimicplay.algo import algo_factory, RolloutPolicy
 from mimicplay.utils.train_utils import get_exp_dir, rollout_with_stats, load_data_for_training
+from libero.libero.envs.regions import *
 
 def train(config, device):
     """
