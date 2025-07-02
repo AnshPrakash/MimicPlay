@@ -61,13 +61,18 @@ pip install -e .
 ```
 
 MimicPlay is based on [robomimic](https://github.com/ARISE-Initiative/robomimic), which facilitates the basics of learning from offline demonstrations.
-```	
+
+
+> Note: ~~git clone https://github.com/ARISE-Initiative/robomimic~~ because `mimicplay-libero` branch doesn't exists anymore
+
+```bash
 cd ..
-git clone https://github.com/ARISE-Initiative/robomimic
+git clone https://github.com/AnshPrakash/robomimic
 cd robomimic
 git checkout mimicplay-libero
 pip install -e .
 ```
+
 
 Install MimicPlay
 ```	
