@@ -51,6 +51,8 @@ This will create histograms and show the estimated freq of a rosbag
 
 It is useful for checking the raw rosbag and processed rosbag for any issue.
 
+Link to [pseudo code](pseudo_code.md)
+
 
 
 

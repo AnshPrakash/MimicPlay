@@ -74,6 +74,7 @@ class RosbagSampler:
 
         t = start_time
         while t <= end_time:
+            # For each timestamp, gather the latest message for all topics
             for topic in self.TOPICS:
                 data_list = topic_data[topic]
                 idx = current_indices[topic]
@@ -84,9 +85,11 @@ class RosbagSampler:
                     idx += 1
                 current_indices[topic] = idx
 
-                if last_values[topic] is not None:
+            # Only append if we have a value for every topic
+            # This make sure all topics in the end will have same length
+            if all(last_values[topic] is not None for topic in self.TOPICS):
+                for topic in self.TOPICS:
                     processed_msgs.append((t, topic, last_values[topic], msgtypes[topic]))
-
             t += self.dt
 
         print(f"[INFO] Total messages in processed output: {len(processed_msgs)}")
