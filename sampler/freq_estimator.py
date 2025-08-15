@@ -36,11 +36,15 @@ class FreqEstimator:
 
         if visualise:
             # Plot and save histogram
-            bins = 50
             plt.figure(figsize=(8, 5))
+            
+            if np.allclose(deltas, deltas[0], rtol=1e-8, atol=1e-10):
+                bins = [deltas[0]-1e-6, deltas[0]+1e-6]
+            else:
+                bins = 50
             plt.hist(deltas, bins=bins, color='steelblue', edgecolor='black')
             plt.axvline(median_dt, color='red', linestyle='--', label=f"Median Δt = {median_dt:.4f}s")
-            plt.axvline(mean_dt, color='blue', linestyle='-', label=f"Mean Δt = {mean_dt:.4f}s")
+            plt.axvline(mean_dt, color='blue', linestyle='--', label=f"Mean Δt = {mean_dt:.4f}s")
             
             # Add median frequency text on the plot
             plt.text(0.95, 0.95, f"Median freq: {med_freq:.3f} Hz",
@@ -49,6 +53,7 @@ class FreqEstimator:
                     transform=plt.gca().transAxes,
                     fontsize=10,
                     bbox=dict(facecolor='white', alpha=0.6, edgecolor='gray'))
+            
             plt.xlabel("Δt between messages (seconds)")
             plt.ylabel("Count")
             plt.title(f"Histogram of Δt for {topic}")
