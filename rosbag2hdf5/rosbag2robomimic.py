@@ -83,6 +83,8 @@ class ToRobomimic:
                         actions_list.append(self._msg_to_numpy(msg))
                     except Exception as e:
                         print(f"[WARN] Skipping action topic {topic}: {e}")
+                        raise
+                        
 
         # Convert obs to datasets
         obs_group = demo_group.create_group("obs")
