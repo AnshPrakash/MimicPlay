@@ -1,4 +1,5 @@
 import numpy as np
+from rosbags.image import message_to_cvimage 
 
 def pose_to_numpy(msg):
     """
@@ -75,34 +76,22 @@ def joint_state_to_numpy(msg):
 #     """
 #     Convert sensor_msgs/Image to a NumPy array.
     
-#     Message structure (Image.msg):contentReference[oaicite:15]{index=15}:contentReference[oaicite:16]{index=16}:
-#       - header: std_msgs/Header (ignored)  
-#       - height: uint32 (rows)  
-#       - width: uint32 (columns)  
-#       - encoding: string (e.g., 'rgb8', 'bgr8', 'mono8')  
-#       - is_bigendian: uint8 (byte order, ignored)  
-#       - step: uint32 (row length in bytes, can verify data size)  
-#       - data: uint8[] (pixel buffer, size = step*height)  
-
-#     Returns:
-#       np.ndarray with shape (height, width, C) or (height, width), dtype determined by encoding.
-#     """
-#     height = msg.height
-#     width = msg.width
-#     enc = msg.encoding.lower()
-#     # Create a 1D array of the data buffer
-#     np_data = np.frombuffer(msg.data, dtype=np.uint8)
-#     # Handle common encodings
-#     if enc in ['rgb8', 'bgr8']:
-#         # 3 channels, 1 byte each
-#         img = np_data.reshape((height, width, 3))
-#     elif enc == 'mono8':
-#         # 1 channel, 1 byte
-#         img = np_data.reshape((height, width))
-#     else:
-#         # Unsupported encoding
-#         raise NotImplementedError(f"Encoding '{msg.encoding}' not supported")
-#     return img
+    Message structure (Image.msg):contentReference[oaicite:15]{index=15}:contentReference[oaicite:16]{index=16}:
+      - header: std_msgs/Header (ignored)  
+      - height: uint32 (rows)  
+      - width: uint32 (columns)  
+      - encoding: string (e.g., 'rgb8', 'bgr8', 'mono8')  
+      - is_bigendian: uint8 (byte order, ignored)  
+      - step: uint32 (row length in bytes, can verify data size)  
+      - data: uint8[] (pixel buffer, size = step*height)  
+        Uses rosbags-image.message_to_cvimage to turn a deserialized sensor_msgs/Image
+        into a numpy (OpenCV) array. Handles bgra8, bgr8, rgb8, mono8, rgb16, etc.
+    
+    Returns:
+      np.ndarray with shape (height, width, C) or (height, width), dtype determined by encoding.
+    """
+    img = message_to_cvimage(msg)   # returns numpy ndarray (H,W[,C])
+    return img
 
 # def grasp_action_goal_to_numpy(msg):
 #     """
@@ -133,9 +122,9 @@ def msg_to_numpy(msg):
     # Mapping of message type to conversion function
     converters = {
         'geometry_msgs/msg/Pose': pose_to_numpy,
-        # 'geometry_msgs/msg/PoseStamped': pose_stamped_to_numpy,
+        'geometry_msgs/msg/PoseStamped': pose_stamped_to_numpy,
         'sensor_msgs/msg/JointState': joint_state_to_numpy,
-        # 'sensor_msgs/msg/Image': image_to_numpy,
+        'sensor_msgs/msg/Image': image_to_numpy,
         # 'sensor_msgs/msg/Joy': joy_to_numpy,
         # 'franka_gripper/msg/GraspActionGoal': grasp_action_goal_to_numpy, # correct this later
     }

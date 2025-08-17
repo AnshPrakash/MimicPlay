@@ -1,10 +1,11 @@
 
 obs_topics:
-  # /franka_gripper/joint_states: joint_states 
+  /franka_state_controller/ee_pose: ee_pose
+  /franka_gripper/joint_states: joint_states 
   /franka_state_controller/joint_states_desired: joint_states_desired
   /franka_state_controller/O_T_EE: O_T_EE
-  /franka_state_controller/ee_pose: ee_pose
   /franka_state_controller/joint_states: joint_states
+  /zedA/zed_node_A/left/image_rect_color: front_camera
 
 action_topics:
   /cartesian_impedance_controller/desired_pose
