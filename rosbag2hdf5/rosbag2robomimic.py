@@ -6,6 +6,8 @@ from datetime import datetime
 from rosbags.rosbag1 import Reader
 from rosbags.typesys import get_typestore, Stores
 
+from rosbag2hdf5.util.msg_numpyfication import msg_to_numpy
+
 
 class ToRobomimic:
     """
@@ -125,12 +127,8 @@ class ToRobomimic:
         (you'll need to customize based on message type)
         """
         # Example: assume msg has "position" and "velocity" attributes
-        if hasattr(msg, "position") and hasattr(msg, "velocity"):
-            return np.concatenate([np.array(msg.position), np.array(msg.velocity)])
-        elif hasattr(msg, "data"):
-            return np.array(msg.data)
-        else:
-            return np.array([0.0])  # placeholder fallback
+        return msg_to_numpy(msg)
+        
 
 if __name__ == "__main__":
     import argparse
