@@ -17,19 +17,19 @@ def pose_to_numpy(msg):
     ], dtype=np.float64)
 
 
-# def pose_stamped_to_numpy(msg):
-#     """
-#     Convert geometry_msgs/PoseStamped to a NumPy array.
+def pose_stamped_to_numpy(msg):
+    """
+    Convert geometry_msgs/PoseStamped to a NumPy array.
     
-#     Message structure (PoseStamped.msg):contentReference[oaicite:8]{index=8}:
-#       - header: std_msgs/Header (ignored in conversion)  
-#       - pose: geometry_msgs/Pose (position and orientation as above)  
+    Message structure (PoseStamped.msg):contentReference[oaicite:8]{index=8}:
+      - header: std_msgs/Header (ignored in conversion)  
+      - pose: geometry_msgs/Pose (position and orientation as above)  
 
-#     Returns:
-#       np.ndarray of shape (7,) as [pos.x, pos.y, pos.z, ori.x, ori.y, ori.z, ori.w].
-#     """
-#     # Reuse pose_to_numpy on the embedded pose field
-#     return pose_to_numpy(msg.pose)
+    Returns:
+      np.ndarray of shape (7,) as [pos.x, pos.y, pos.z, ori.x, ori.y, ori.z, ori.w].
+    """
+    # Reuse pose_to_numpy on the embedded pose field
+    return pose_to_numpy(msg.pose)
 
 def joint_state_to_numpy(msg):
     """
