@@ -20,3 +20,8 @@ action_topics:
 mask: true 
 
 ```
+
+# Run
+```bash
+python -m rosbag2hdf5.rosbag2robomimic --folder <folder with rosbag files> --config <path to config file>
+```
