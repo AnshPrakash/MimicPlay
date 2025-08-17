@@ -72,9 +72,9 @@ def joint_state_to_numpy(msg):
 #     buttons = np.array(msg.buttons, dtype=np.float32) if msg.buttons else np.array([], dtype=np.float32)
 #     return np.concatenate([axes, buttons])
 
-# def image_to_numpy(msg):
-#     """
-#     Convert sensor_msgs/Image to a NumPy array.
+def image_to_numpy(msg):
+    """
+    Convert sensor_msgs/Image to a NumPy array.
     
     Message structure (Image.msg):contentReference[oaicite:15]{index=15}:contentReference[oaicite:16]{index=16}:
       - header: std_msgs/Header (ignored)  
