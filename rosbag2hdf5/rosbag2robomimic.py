@@ -63,6 +63,7 @@ class ToRobomimic:
         obs_dict = {key: [] for key in self.obs_topics.values()}
         actions_list = []
 
+        last_gripper_state = -1 #Starting assumed to be gripper state open
         with Reader(rosbagfile) as reader:
             for connection, timestamp, rawdata in reader.messages():
                 topic = connection.topic
@@ -73,14 +74,23 @@ class ToRobomimic:
                     try:
                         msg = self.typestore.deserialize_ros1(rawdata, connection.msgtype)
                         obs_dict[key].append(self._msg_to_numpy(msg))
+                        if key == "gripper_joint_states":
+                            positions = np.array(msg.position)
+                            drift = positions[0]
+                            last_gripper_state = 1 if drift < 0.02 else -1 # if dist < 0.02, assume gripper is closed
                     except Exception as e:
                         print(f"[WARN] Skipping obs topic {topic}: {e}")
+                        raise e
 
                 # If this topic belongs to actions
                 if topic in self.action_topics:
                     try:
                         msg = self.typestore.deserialize_ros1(rawdata, connection.msgtype)
-                        actions_list.append(self._msg_to_numpy(msg))
+                        actions_list.append( 
+                                            np.concatenate([
+                                                self._msg_to_numpy(msg),
+                                                np.array([last_gripper_state])]) 
+                                            )
                     except Exception as e:
                         print(f"[WARN] Skipping action topic {topic}: {e}")
                         raise
