@@ -3,5 +3,7 @@
 
 datasets/
 trained_models_highlevel
+processed_folder/
+robomimic_hdf5/
 
 *.mp4
