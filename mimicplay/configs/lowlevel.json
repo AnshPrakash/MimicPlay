@@ -1,7 +1,7 @@
 {
     "algo_name": "mimicplay",
     "experiment": {
-        "name": "test",
+        "name": "real-robot-lowlevel",
         "validate": true,
         "logging": {
             "terminal_output_to_txt": true,
@@ -21,11 +21,11 @@
         "env": null,
         "additional_envs": null,
         "render": false,
-        "render_video": true,
+        "render_video": false,
         "keep_all_videos": false,
         "video_skip": 5,
         "rollout": {
-            "enabled": true,
+            "enabled": false,
             "n": 10,
             "horizon": 1600,
             "rate": 50,
@@ -169,13 +169,13 @@
         "modalities": {
             "obs": {
                 "low_dim": [
-                    "robot0_eef_pos",
-                    "robot0_eef_quat",
-                    "robot0_gripper_qpos"
+                    "O_T_EE",
+                    "gripper_joint_states",
+                    "joint_states"
                 ],
                 "rgb": [
-                    "agentview_image",
-                    "robot0_eye_in_hand_image"
+                    "back_camera",
+                    "front_camera"
                 ],
                 "depth": [],
                 "scan": []
@@ -183,7 +183,7 @@
             "goal": {
                 "low_dim": [],
                 "rgb": [
-                    "agentview_image"
+                    "back_camera"
                 ],
                 "depth": [],
                 "scan": []
