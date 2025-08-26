@@ -7,3 +7,4 @@ processed_folder/
 robomimic_hdf5/
 
 *.mp4
+*.hdf5
