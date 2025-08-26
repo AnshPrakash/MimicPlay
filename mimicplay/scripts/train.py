@@ -89,6 +89,7 @@ def train(config, device):
     # create environment
     envs = OrderedDict()
     if config.experiment.rollout.enabled:
+        return ValueError("For real world it should be disabled")
         # create environments for validation runs
         env_names = [env_meta["env_name"]]
 
@@ -249,7 +250,7 @@ def train(config, device):
         video_paths = None
         rollout_check = (epoch % config.experiment.rollout.rate == 0) or (should_save_ckpt and ckpt_reason == "time")
         if config.experiment.rollout.enabled and (epoch > config.experiment.rollout.warmstart) and rollout_check:
-
+            return ValueError("Simulation should be disabled for real world")
             # wrap model as a RolloutPolicy to prepare for rollouts
             rollout_model = RolloutPolicy(model, obs_normalization_stats=obs_normalization_stats)
 
