@@ -3,8 +3,11 @@
 
 datasets/
 trained_models_highlevel
+trained_models_lowlevel
 processed_folder/
 robomimic_hdf5/
 
 *.mp4
 *.hdf5
+checkpoints*
+low_level_hdf5*

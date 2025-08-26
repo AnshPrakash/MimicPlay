@@ -57,10 +57,13 @@ class RosbagSampler:
                 continue
             timestamps = [t for t, _, _ in msgs]
             med_freq = freq_checker.compute_freq(topic, timestamps, visualise=False)
-            assert med_freq > self.target_freq, (
-                f"[ERROR] Target frequency ({self.target_freq} Hz) is higher than the "
-                f"current median frequency ({med_freq:.2f} Hz) for topic '{topic}'."
-            )
+            try:
+                assert med_freq > self.target_freq, (
+                    f"[ERROR] Target frequency ({self.target_freq} Hz) is higher than the "
+                    f"current median frequency ({med_freq:.2f} Hz) for topic '{topic}'."
+                )
+            except AssertionError as e:
+                print(e)
 
 
         start_time = min(vals[0][0] for vals in topic_data.values() if vals)

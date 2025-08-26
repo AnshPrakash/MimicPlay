@@ -1,5 +1,6 @@
 import numpy as np
 from rosbags.image import message_to_cvimage 
+import cv2
 
 def pose_to_numpy(msg):
     """
@@ -72,7 +73,7 @@ def joint_state_to_numpy(msg):
 #     buttons = np.array(msg.buttons, dtype=np.float32) if msg.buttons else np.array([], dtype=np.float32)
 #     return np.concatenate([axes, buttons])
 
-def image_to_numpy(msg):
+def image_to_numpy(msg, new_size=(84,84)):
     """
     Convert sensor_msgs/Image to a NumPy array.
     
