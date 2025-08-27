@@ -169,13 +169,13 @@
         "modalities": {
             "obs": {
                 "low_dim": [
-                    "O_T_EE",
+                    "robot0_eef_pos",
                     "gripper_joint_states",
                     "joint_states"
                 ],
                 "rgb": [
-                    "back_camera",
-                    "front_camera"
+                    "agentview_image_2",
+                    "agentview_image"
                 ],
                 "depth": [],
                 "scan": []
@@ -183,7 +183,7 @@
             "goal": {
                 "low_dim": [],
                 "rgb": [
-                    "back_camera"
+                    "agentview_image"
                 ],
                 "depth": [],
                 "scan": []
