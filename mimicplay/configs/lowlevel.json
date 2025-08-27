@@ -155,7 +155,7 @@
             "spatial_softmax_num_kp": 64,
             "gmm_min_std": 0.0001,
             "dropout": 0.1,
-            "trained_highlevel_planner": "checkpoints/model_epoch_1_best_validation_-36.53835334777832.pth",
+            "trained_highlevel_planner": "checkpoints/model_epoch_25_best_validation_-40.61926765441895.pth",
             "eval_goal_img_window": 30,
             "eval_max_goal_img_iter": 5
         },
@@ -217,8 +217,8 @@
                 },
                 "obs_randomizer_class": "CropRandomizer",
                 "obs_randomizer_kwargs": {
-                    "crop_height": 76,
-                    "crop_width": 76,
+                    "crop_height": 324,
+                    "crop_width": 576,
                     "num_crops": 1,
                     "pos_enc": false
                 }
