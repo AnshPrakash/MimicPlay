@@ -44,10 +44,17 @@ class ToRobomimic:
 
         # Create mask datasets
         self.mask_group.create_dataset(
-            "train" if mask else "valid",
+            "train",
             shape=(0,),
             maxshape=(None,),
             dtype=h5py.string_dtype(encoding="utf-8"),
+        )
+        
+        self.mask_group.create_dataset(
+            "valid",
+            shape=(0,),
+            maxshape=(None,),
+            dtype=h5py.string_dtype(encoding="utf-8")
         )
 
         # Rosbag deserializer
@@ -107,13 +114,23 @@ class ToRobomimic:
             obs_group.create_dataset(key, data=np.stack(values))
 
         # Actions
-        demo_group.create_dataset("actions", data=np.stack(actions_list))
+        actions_arr = np.stack(actions_list)
+        actions_dset = demo_group.create_dataset("actions", data=actions_arr)
+        actions_dset.attrs["num_samples"] = actions_arr.shape[0]
+        
 
-        # States (optional – could be some obs concatenation)
-        # demo_group.create_dataset("states", data=...)
+        # Required extra datasets
+        T = actions_arr.shape[0]
+
+        # Attach num_samples to demo group (critical!)
+        demo_group.attrs["num_samples"] = T
 
         # Update mask
-        mask_type = "train" if self.mask else "valid"
+        if self.demo_counter == 0:
+            mask_type = "valid"   # always put demo_0 in valid
+        else:
+            mask_type = "train" if self.mask else "valid"
+            
         dset = self.mask_group[mask_type]
         dset.resize((dset.shape[0] + 1,))
         dset[-1] = demo_name
