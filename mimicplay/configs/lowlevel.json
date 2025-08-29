@@ -170,6 +170,7 @@
             "obs": {
                 "low_dim": [
                     "robot0_eef_pos",
+                    "robot0_eef_quat",
                     "gripper_joint_states",
                     "joint_states"
                 ],

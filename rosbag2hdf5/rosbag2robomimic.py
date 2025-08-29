@@ -73,6 +73,7 @@ class ToRobomimic:
 
         # Store obs and actions
         obs_dict = {key: [] for key in self.obs_topics.values()}
+        obs_dict["robot0_eef_quat"] = []  # extra key for quaternion
         actions_list = []
 
         last_gripper_state = -1 #Starting assumed to be gripper state open
@@ -85,7 +86,12 @@ class ToRobomimic:
                     key = self.obs_topics[topic]
                     try:
                         msg = self.typestore.deserialize_ros1(rawdata, connection.msgtype)
-                        obs_dict[key].append(self._msg_to_numpy(msg))
+                        if key == "robot0_eef_pos":
+                            numpy_data = self._msg_to_numpy(msg)
+                            obs_dict[key].append(numpy_data[:3]) # position
+                            obs_dict["robot0_eef_quat"].append(numpy_data[3:])
+                        else:
+                            obs_dict[key].append(self._msg_to_numpy(msg))
                         if key == "gripper_joint_states":
                             positions = np.array(msg.position)
                             drift = positions[0]
