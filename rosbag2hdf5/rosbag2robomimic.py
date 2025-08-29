@@ -43,7 +43,12 @@ class ToRobomimic:
         self.mask_group = self.h5file.create_group("mask")
 
         # Create mask datasets
-        self.mask_group.create_dataset("train" if mask else "valid", shape=(0,), maxshape=(None,), dtype="i8")
+        self.mask_group.create_dataset(
+            "train" if mask else "valid",
+            shape=(0,),
+            maxshape=(None,),
+            dtype=h5py.string_dtype(encoding="utf-8"),
+        )
 
         # Rosbag deserializer
         self.typestore = get_typestore(Stores.ROS1_NOETIC)
@@ -111,7 +116,7 @@ class ToRobomimic:
         mask_type = "train" if self.mask else "valid"
         dset = self.mask_group[mask_type]
         dset.resize((dset.shape[0] + 1,))
-        dset[-1] = self.demo_counter
+        dset[-1] = demo_name
 
         self.demo_counter += 1
 
