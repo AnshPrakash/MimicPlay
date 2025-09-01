@@ -52,11 +52,7 @@
         "goal_mode": "nstep",
         "cuda": true,
         "batch_size": 32,
-<<<<<<< HEAD
         "num_epochs": 500,
-=======
-        "num_epochs": 1,
->>>>>>> a7fd8b0 (config_adapt)
         "seed": 1
     },
     "algo": {
