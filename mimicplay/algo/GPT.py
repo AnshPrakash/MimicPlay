@@ -767,21 +767,24 @@ class GPT_wrapper(nn.Module):
     def forward_train(self, obs):
         b, seq, _ = obs['robot0_eef_pos'].size()
 
-        x_ee_image = obs['robot0_eye_in_hand_image']
-        x_ee_image = x_ee_image.view(b*seq, 3, 84, 84)
-        grid_shifted = self.random_crop_grid(x_ee_image, self.grid_source)
-        x_ee_image = F.grid_sample(x_ee_image, grid_shifted, align_corners=True)
+        # x_ee_image = obs['robot0_eye_in_hand_image']
+        # x_ee_image = x_ee_image.view(b*seq, 3, 84, 84)
+        # grid_shifted = self.random_crop_grid(x_ee_image, self.grid_source)
+        # x_ee_image = F.grid_sample(x_ee_image, grid_shifted, align_corners=True)
 
-        x_ee_image = self.ee_image_enc(x_ee_image)
-        x_ee_image = self.ee_spatial_softmax(x_ee_image)
-        x_ee_image = x_ee_image.view(b, seq, 128).contiguous()
+        # x_ee_image = self.ee_image_enc(x_ee_image)
+        # x_ee_image = self.ee_spatial_softmax(x_ee_image)
+        # x_ee_image = x_ee_image.view(b, seq, 128).contiguous()
 
         x_pose = torch.cat((obs["robot0_eef_pos"], obs["robot0_eef_quat"]), dim=-1).contiguous()
         x_pose_feat = self.mlp_encoder_pose(x_pose)
 
         x_feature = obs['latent_plan']
 
-        input_tensor = torch.cat((x_feature, x_ee_image, x_pose_feat), dim=-1).contiguous()
+        # replaced the robot0_eef_pos encoding with zeros because we don't have EE camera in the real robot experiments
+        zeros_x_ee_image = torch.zeros((b, seq, 128), device=x_pose.device, dtype=x_pose.dtype)
+        
+        input_tensor = torch.cat((x_feature, zeros_x_ee_image, x_pose_feat), dim=-1).contiguous()
 
         N = seq
         output_tensor = None
@@ -831,14 +834,14 @@ class GPT_wrapper(nn.Module):
 
     def forward_step(self, obs):
 
-        x_ee_image = obs['robot0_eye_in_hand_image']
-        x_ee_image = x_ee_image.view(1, 3, 84, 84)
-        grid_shifted = self.random_crop_grid(x_ee_image, self.grid_source)
-        x_ee_image = F.grid_sample(x_ee_image, grid_shifted, align_corners=True)
+        # x_ee_image = obs['robot0_eye_in_hand_image']
+        # x_ee_image = x_ee_image.view(1, 3, 84, 84)
+        # grid_shifted = self.random_crop_grid(x_ee_image, self.grid_source)
+        # x_ee_image = F.grid_sample(x_ee_image, grid_shifted, align_corners=True)
 
-        x_ee_image = self.ee_image_enc(x_ee_image)
-        x_ee_image = self.ee_spatial_softmax(x_ee_image)
-        x_ee_image = x_ee_image.view(1, 1, 128).contiguous()
+        # x_ee_image = self.ee_image_enc(x_ee_image)
+        # x_ee_image = self.ee_spatial_softmax(x_ee_image)
+        # x_ee_image = x_ee_image.view(1, 1, 128).contiguous()
 
         x_pose = torch.cat((obs["robot0_eef_pos"], obs["robot0_eef_quat"]), dim=-1).contiguous()
         x_pose_feat = self.mlp_encoder_pose(x_pose)
@@ -847,7 +850,9 @@ class GPT_wrapper(nn.Module):
         x_feature = obs['latent_plan']
         x_feature = x_feature.view(1, 1, 400).contiguous()
 
-        input_tensor = torch.cat((x_feature, x_ee_image, x_pose_feat), dim=-1).contiguous()
+        # replaced the robot0_eef_pos encoding with zeros because we don't have EE camera in the real robot experiments
+        zeros_x_ee_image = torch.zeros((1, 1, 128), device=x_pose.device, dtype=x_pose.dtype)
+        input_tensor = torch.cat((x_feature, zeros_x_ee_image, x_pose_feat), dim=-1).contiguous()
 
         self.buffer.append(input_tensor.clone())
         if len(self.buffer) > self.gpt_model.block_size:
