@@ -53,9 +53,9 @@ def parse_args():
     """
     parser = argparse.ArgumentParser(description='Train a Fast R-CNN network')
     parser.add_argument('--left_video',
-                        help='left view video',
+                        help='left view video', # Front view ZED_A
                         default='vis_1.mp4', type=str)
-    parser.add_argument('--right_video',
+    parser.add_argument('--right_video', # Back view ZED_B
                         help='right view video',
                         default='vis_2.mp4', type=str)
     parser.add_argument('--dataset', dest='dataset',
@@ -284,9 +284,9 @@ if __name__ == '__main__':
     front_image_indexes = [1, 2]
     for front_image_index in front_image_indexes:
         if front_image_index == 1:
-            input_video_path = args.left_video
+            input_video_path = args.left_video # Front view ZED_A
         elif front_image_index == 2:
-            input_video_path = args.right_video
+            input_video_path = args.right_video # back view ZED_B
         image = extractImages(input_video_path)
         image = np.asarray(image)
         image = image[::args.downsample_rate]
