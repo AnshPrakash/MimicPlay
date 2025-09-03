@@ -10,7 +10,7 @@ with h5py.File('/home/xiaoqi/MimicPlay/mimicplay/datasets/playdata/train_testing
     actions = np.array(f['data/demo_0/actions'])
 
 # Reshape the actions to [145, 10, 4]
-actions = actions.reshape((605, 10, 4))
+actions = actions.reshape((60, 10, 4))
 
 if view_id == 1:
     actions = actions[:, :, :2]
@@ -28,7 +28,7 @@ for i in range(images.shape[0]):
     action_unscaled = action * np.array([img.shape[0], img.shape[1]])
 
     for pt in action_unscaled:
-        img = cv2.circle(img, (int(pt[1]), int(pt[0])), radius=5, color=(0, 255, 0), thickness=-1)
+        img = cv2.circle(img, (int(pt[0]), int(pt[1])), radius=5, color=(0, 255, 0), thickness=-1)
 
     video.write(img)
 

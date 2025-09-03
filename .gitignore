@@ -5,3 +5,4 @@ datasets/
 trained_models_highlevel
 
 *.mp4
+buffer*

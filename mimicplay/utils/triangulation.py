@@ -19,10 +19,24 @@ class CameraModel:
         ])
 
     @property
+    def R_cw(self):
+        return self.R_wc.T
+
+    @property
+    def t_cw(self):
+        return - self.R_wc.T @ self.t_wc.reshape(3, 1)
+
+    @property
     def P(self):
-        Rt = np.hstack((self.R_wc, self.t_wc.reshape(-1, 1)))
+        Rt = np.hstack((self.R_cw, self.t_cw))  # [R_cw | t_cw]
         return self.K @ Rt
 
+    def scaled(self, sx, sy):
+        """Return a new CameraModel with intrinsics scaled by (sx, sy)."""
+        return CameraModel(self.fx * sx, self.fy * sy,
+                           self.cx * sx, self.cy * sy,
+                           self.R_wc.copy(), self.t_wc.copy())
+    
     def project_point(self, X):
         X_h = np.hstack((X, 1))  # homogeneous
         x = self.P @ X_h
