@@ -52,7 +52,7 @@
         "goal_mode": "nstep",
         "cuda": true,
         "batch_size": 16,
-        "num_epochs": 1000,
+        "num_epochs": 500,
         "seed": 1
     },
     "algo": {
@@ -61,7 +61,7 @@
                 "learning_rate": {
                     "initial": 0.0001,
                     "decay_factor": 0.1,
-                    "epoch_schedule": [300, 600]
+                    "epoch_schedule": [150, 300]
                 },
                 "regularization": {
                     "L2": 0.0
@@ -161,8 +161,8 @@
         },
         "playdata": {
             "enabled": true,
-            "goal_image_range": [100, 200],
-            "eval_goal_gap": 150
+            "goal_image_range": [50, 100],
+            "eval_goal_gap": 75
         }
     },
     "observation": {
@@ -173,7 +173,8 @@
                     "robot0_eef_pos_future_traj"
                 ],
                 "rgb": [
-                    "agentview_image"
+                    "agentview_image",
+                    "agentview_image_2"
                 ],
                 "depth": [],
                 "scan": []
@@ -181,7 +182,8 @@
             "goal": {
                 "low_dim": [],
                 "rgb": [
-                    "agentview_image"
+                    "agentview_image",
+                    "agentview_image_2"
                 ],
                 "depth": [],
                 "scan": []
