@@ -43,7 +43,7 @@
         "hdf5_load_next_obs": false,
         "hdf5_filter_key": "train",
         "hdf5_validation_filter_key": "valid",
-        "seq_length": 1,
+        "seq_length": 10,
         "dataset_keys": [
             "actions",
             "rewards",
@@ -51,8 +51,8 @@
         ],
         "goal_mode": "nstep",
         "cuda": true,
-        "batch_size": 32,
-        "num_epochs": 500,
+        "batch_size": 16,
+        "num_epochs": 1000,
         "seed": 1
     },
     "algo": {
@@ -61,7 +61,7 @@
                 "learning_rate": {
                     "initial": 0.0001,
                     "decay_factor": 0.1,
-                    "epoch_schedule": []
+                    "epoch_schedule": [300, 600]
                 },
                 "regularization": {
                     "L2": 0.0
@@ -88,7 +88,7 @@
         "gmm": {
             "enabled": true,
             "num_modes": 5,
-            "min_std": 0.0001,
+            "min_std": 0.01,
             "std_activation": "softplus",
             "low_noise_eval": false
         },
