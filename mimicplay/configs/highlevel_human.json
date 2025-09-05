@@ -43,7 +43,7 @@
         "hdf5_load_next_obs": false,
         "hdf5_filter_key": "train",
         "hdf5_validation_filter_key": "valid",
-        "seq_length": 10,
+        "seq_length": 6,
         "dataset_keys": [
             "actions",
             "rewards",
@@ -52,7 +52,7 @@
         "goal_mode": "nstep",
         "cuda": true,
         "batch_size": 16,
-        "num_epochs": 500,
+        "num_epochs": 1000,
         "seed": 1
     },
     "algo": {
@@ -61,7 +61,7 @@
                 "learning_rate": {
                     "initial": 0.0001,
                     "decay_factor": 0.1,
-                    "epoch_schedule": [150, 300]
+                    "epoch_schedule": []
                 },
                 "regularization": {
                     "L2": 0.0
@@ -88,7 +88,7 @@
         "gmm": {
             "enabled": true,
             "num_modes": 5,
-            "min_std": 0.01,
+            "min_std": 0.0001,
             "std_activation": "softplus",
             "low_noise_eval": false
         },
@@ -153,7 +153,7 @@
             "action_dim": 7,
             "proprio_dim": 7,
             "spatial_softmax_num_kp": 64,
-            "gmm_min_std": 0.0001,
+            "gmm_min_std": 0.01,
             "dropout": 0.1,
             "trained_highlevel_planner": "",
             "eval_goal_img_window": 30,
@@ -161,8 +161,8 @@
         },
         "playdata": {
             "enabled": true,
-            "goal_image_range": [50, 100],
-            "eval_goal_gap": 75
+            "goal_image_range": [13, 18],
+            "eval_goal_gap": 15
         }
     },
     "observation": {
@@ -173,8 +173,7 @@
                     "robot0_eef_pos_future_traj"
                 ],
                 "rgb": [
-                    "agentview_image",
-                    "agentview_image_2"
+                    "agentview_image"
                 ],
                 "depth": [],
                 "scan": []
@@ -182,8 +181,7 @@
             "goal": {
                 "low_dim": [],
                 "rgb": [
-                    "agentview_image",
-                    "agentview_image_2"
+                    "agentview_image"
                 ],
                 "depth": [],
                 "scan": []

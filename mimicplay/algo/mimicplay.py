@@ -113,7 +113,7 @@ class Highlevel_GMM_pretrain(BC_Gaussian):
         recurse_helper(batch)
 
         batch["goal_obs"]["agentview_image"] = batch["goal_obs"]["agentview_image"][:, 0]
-        batch["goal_obs"]["agentview_image_2"] = batch["goal_obs"]["agentview_image_2"][:, 0]
+        # batch["goal_obs"]["agentview_image_2"] = batch["goal_obs"]["agentview_image_2"][:, 0]
 
         return TensorUtils.to_device(TensorUtils.to_float(batch), self.device)
 
