@@ -5,6 +5,7 @@ from pathlib import Path
 from datetime import datetime
 import dm_env
 from envlogger.backends import tfds_backend_writer, rlds_utils
+from tensorflow_datasets.rlds import rlds_base
 from envlogger import step_data
 import tensorflow_datasets as tfds
 from rosbags.rosbag1 import Reader
@@ -33,24 +34,30 @@ class RosbagToRLDS:
         self.shape_dict["observation"] = {k: None for k in self.obs_topics.values()}
         self.shape_dict["action"] = None   # action shape will be determined later
         
-    def _get_ds_config(self) -> tfds.features.FeaturesDict:
-        """Build TFDS feature spec based on observation dict keys."""
-        self._determine_shapes()
-        return tfds.features.FeaturesDict({
-            'steps': tfds.features.Dataset({
-                'observation': {
-                    k: tfds.features.Tensor(shape=self.shape_dict["observation"][k], dtype=tf.float32)
-                    for k in self.obs_topics.values()
-                },
-                'action': tfds.features.Tensor(shape=self.shape_dict["action"], dtype=tf.float32),
-                'reward': tfds.features.Scalar(dtype=tf.float32),
-                'is_terminal': tfds.features.Scalar(dtype=tf.bool),
-                'is_first': tfds.features.Scalar(dtype=tf.bool),
-                'is_last': tfds.features.Scalar(dtype=tf.bool),
-                'discount': tfds.features.Scalar(dtype=tf.float32),
-            }),
-            'episode_id': tf.int64,
-        })
+    def _get_ds_config(self) -> rlds_base.DatasetConfig:
+        """Build DatasetConfig based on observation dict keys."""
+        self._determine_shapes()  # fills self.shape_dict with shapes for obs & action
+
+        return rlds_base.DatasetConfig(
+            name="rosbag_rlds",  # dataset name
+            # observation_info={
+            #     k: tf.TensorSpec(shape=self.shape_dict["observation"][k], dtype=tf.float32)
+            #     for k in self.obs_topics.values()
+                
+            # },
+            # action_info={
+            #     "shape": self.shape_dict["action"],
+            #     "dtype": tf.float32,
+            # },
+            # reward_info={
+            #     "shape": (),
+            #     "dtype": tf.float32,
+            # },
+            # discount_info={
+            #     "shape": (),
+            #     "dtype": tf.float32,
+            # }
+        )
 
     def build_dataset(self):
         """Return RLDS dataset: tf.data.Dataset of episodes."""
@@ -183,8 +190,9 @@ class RosbagToRLDS:
         save_dir = str(self.output_path)  
 
         # Create a backend writer
+        dataset_config = self._get_ds_config()
         writer = tfds_backend_writer.TFDSBackendWriter(
-            ds_config=self._get_ds_config(),
+            ds_config=dataset_config,
             data_directory=save_dir,
             split_name=split_name,
             max_episodes_per_file=100,   # you can adjust this
