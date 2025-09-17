@@ -2,6 +2,7 @@ import uuid
 import numpy as np
 import tensorflow as tf
 from pathlib import Path
+from datetime import datetime
 from rosbags.rosbag1 import Reader
 from rosbags.typesys import get_typestore, Stores
 from rosbag2hdf5.util.msg_numpyfication import msg_to_numpy
@@ -13,6 +14,15 @@ class RosbagToRLDS:
         self.obs_topics = obs_topics
         self.action_topics = action_topics
         self.typestore = get_typestore(Stores.ROS1_NOETIC)
+        
+        self.output_dir = Path("rlds_dataset")
+        self.output_dir.mkdir(exist_ok=True, parents=True)
+
+        # Output file path (timestamped)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        
+        output_name = f"rlds_{timestamp}"
+        self.output_path = self.output_dir / output_name
 
     def build_dataset(self):
         """Return RLDS dataset: tf.data.Dataset of episodes."""
@@ -107,6 +117,11 @@ class RosbagToRLDS:
             },
         }
 
+    def store_dataset(self, dataset):
+        """Store the RLDS dataset to disk."""
+        # tf.data.experimental.save(dataset, self.output_path)
+        tf.data.Dataset.save(dataset, self.output_path)
+        print(f"[INFO] RLDS dataset saved to {self.output_path}")
 
 if __name__ == "__main__":
     import argparse
@@ -142,12 +157,17 @@ if __name__ == "__main__":
         action_topics=action_topics
     )
 
-    # Process all rosbags in folder
-    for episode in converter.build_dataset():
-        print(episode["episode_metadata"])
-        for step in episode["steps"]:
-            print(step)
-        break
+    dataset = converter.build_dataset()
+    
+    
+    converter.store_dataset(dataset)
+    
+    # # Process all rosbags in folder
+    # for episode in dataset.take(1):
+    #     print(episode["episode_metadata"])
+    #     for step in episode["steps"].take(3):
+    #         print(step)
+        
         
 
 
