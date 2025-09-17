@@ -25,3 +25,35 @@ mask: true
 ```bash
 python -m rosbag2hdf5.rosbag2robomimic --folder <folder with rosbag files> --config <path to config file>
 ```
+
+
+
+## RLDS
+
+To read RLDS existing datasets, we can use `tfds` package
+
+
+
+```
+pip install tensorflow-datasets
+pip install envlogger[tfds]
+```
+
+```
+conda create -n rlds python=3.12
+conda activate rlds
+
+pip install rlds[tensorflow]
+pip install tfds-nightly
+```
+
+```
+pip install -r requirements_rlds.txt 
+```
+
+
+Follow this [tutorial](https://colab.research.google.com/github/google-research/rlds/blob/main/rlds/examples/rlds_tutorial.ipynb#scrollTo=tErv4WRmgTjE) for performing other transformations to RLDS dataset
+
+
+
+
