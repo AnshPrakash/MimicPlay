@@ -40,11 +40,12 @@ pip install envlogger[tfds]
 ```
 
 ```
-conda create -n rlds python=3.12
+conda create -n rlds python=3.11
 conda activate rlds
 
 pip install rlds[tensorflow]
 pip install tfds-nightly
+pip install envlogger[tfds]
 ```
 
 ```
@@ -53,6 +54,11 @@ pip install -r requirements_rlds.txt
 
 
 Follow this [tutorial](https://colab.research.google.com/github/google-research/rlds/blob/main/rlds/examples/rlds_tutorial.ipynb#scrollTo=tErv4WRmgTjE) for performing other transformations to RLDS dataset
+
+**How to read the stored data?**
+
+Check the documentation from [google-deepming/envlogger](https://github.com/google-deepmind/envlogger/tree/main)
+
 
 
 
