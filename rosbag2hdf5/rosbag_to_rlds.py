@@ -33,10 +33,11 @@ class RosbagToRLDS:
         self.shape_dict = {}
         self.shape_dict["observation"] = {k: None for k in self.obs_topics.values()}
         self.shape_dict["action"] = None   # action shape will be determined later
+        self._determine_shapes()  # fills self.shape_dict with shapes for obs & action
+
         
     def _get_ds_config(self) -> rlds_base.DatasetConfig:
         """Build DatasetConfig based on observation dict keys."""
-        self._determine_shapes()  # fills self.shape_dict with shapes for obs & action
 
         return rlds_base.DatasetConfig(
             name="rosbag_rlds",  # dataset name
@@ -157,22 +158,63 @@ class RosbagToRLDS:
 
         T = len(actions_list)
 
-        steps = {
-            "is_first": [t == 0 for t in range(T)],
-            "is_last":  [t == T - 1 for t in range(T)],
-            "observation": {
-                k: [obs_dict[k][t] for t in range(T)] for k in obs_dict.keys()
-            },
-            "action": actions_list,
-            "reward": [0.0 for _ in range(T)],
-            "discount": [1.0 for _ in range(T)],
-            "is_terminal": [t == T - 1 for t in range(T)],
+        # build per-step dicts
+        step_dicts = []
+        for t in range(T):
+            step = {
+                "is_first": t == 0,
+                "is_last": t == T - 1,
+                "observation": {k: obs_dict[k][t] for k in obs_dict.keys()},
+                "action": actions_list[t],
+                "reward": 0.0,
+                "discount": 1.0,
+                "is_terminal": t == T - 1,
+            }
+        step_dicts.append(step)
+        
+        metadata = {
+            "episode_id": tf.constant(str(rosbagfile).encode("utf-8")),
+            "agent_id": tf.constant("robot1"),
+            "environment_config": tf.constant("default"),
+            "experiment_id": tf.constant("exp001"),
+            "invalid": tf.constant(False),
         }
-        steps_ds = tf.data.Dataset.from_tensor_slices(steps)
+
+        # wrap into tf.data.Dataset
+        steps_ds = tf.data.Dataset.from_generator(
+            lambda: iter(step_dicts),
+            output_signature={
+                "is_first": tf.TensorSpec((), tf.bool),
+                "is_last": tf.TensorSpec((), tf.bool),
+                "observation": {
+                    k: tf.TensorSpec(shape=self.shape_dict["observation"][k], dtype=tf.float32)
+                    for k in obs_dict.keys()
+                },
+                "action": tf.TensorSpec(shape=self.shape_dict["action"], dtype=tf.float32),
+                "reward": tf.TensorSpec((), tf.float32),
+                "discount": tf.TensorSpec((), tf.float32),
+                "is_terminal": tf.TensorSpec((), tf.bool),
+            },
+        )
+        
+        # steps = {
+        #     "is_first": [t == 0 for t in range(T)],
+        #     "is_last":  [t == T - 1 for t in range(T)],
+        #     "observation": {
+        #         k: [obs_dict[k][t] for t in range(T)] for k in obs_dict.keys()
+        #     },
+        #     "action": actions_list,
+        #     "reward": [0.0 for _ in range(T)],
+        #     "discount": [1.0 for _ in range(T)],
+        #     "is_terminal": [t == T - 1 for t in range(T)],
+        # }
+        # steps_ds = tf.data.Dataset.from_tensor_slices(steps)
 
         # RLDS episode dict
+        # from ipdb import set_trace; set_trace()
         return {
-            "steps": steps_ds
+            "steps": steps_ds,
+            "episode_metadata": metadata,
         }
 
     def store_dataset(self, dataset):
@@ -200,6 +242,8 @@ class RosbagToRLDS:
 
         episode_id = 0
         for episode in dataset:
+            print(f"Processing episode {episode_id}")
+            from ipdb import set_trace; set_trace()
             steps = episode["steps"]
 
             # Initialize a new episode
