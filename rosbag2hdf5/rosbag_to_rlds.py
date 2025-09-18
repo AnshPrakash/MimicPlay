@@ -161,7 +161,7 @@ class RosbagToRLDS:
         T = len(actions_list)
 
         # build per-step dicts
-        step_dicts = []
+        steps = []
         for t in range(T):
             step = {
                 "is_first": np.bool_(t == 0),
@@ -173,7 +173,7 @@ class RosbagToRLDS:
                 "is_terminal": np.bool_(t == T - 1),
             }
 
-        step_dicts.append(step)
+            steps.append(step)
         
         metadata = {
             "episode_id": str(rosbagfile).encode("utf-8"),
@@ -183,9 +183,8 @@ class RosbagToRLDS:
             "invalid": False,
         }
 
-        
         return {
-            "steps": step_dicts,
+            "steps": steps,
             "episode_metadata": metadata,
         }
 
