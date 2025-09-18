@@ -117,7 +117,7 @@ class RosbagToRLDS:
                         msg = self.typestore.deserialize_ros1(rawdata, connection.msgtype)
                         act = msg_to_numpy(msg)
                         if self.shape_dict["action"] is None:
-                            self.shape_dict["action"] = act.shape
+                            self.shape_dict["action"] = (act.shape[0] + 1, )  # +1 for gripper state
             break  # Only need to inspect the first bag
         print("Determined shapes:")
         print("Observation shapes:", self.shape_dict["observation"])
@@ -197,21 +197,6 @@ class RosbagToRLDS:
             },
         )
         
-        # steps = {
-        #     "is_first": [t == 0 for t in range(T)],
-        #     "is_last":  [t == T - 1 for t in range(T)],
-        #     "observation": {
-        #         k: [obs_dict[k][t] for t in range(T)] for k in obs_dict.keys()
-        #     },
-        #     "action": actions_list,
-        #     "reward": [0.0 for _ in range(T)],
-        #     "discount": [1.0 for _ in range(T)],
-        #     "is_terminal": [t == T - 1 for t in range(T)],
-        # }
-        # steps_ds = tf.data.Dataset.from_tensor_slices(steps)
-
-        # RLDS episode dict
-        # from ipdb import set_trace; set_trace()
         return {
             "steps": steps_ds,
             "episode_metadata": metadata,
@@ -228,47 +213,45 @@ class RosbagToRLDS:
         
         
     def store_dataset(self, dataset, split_name: str = "train"):
-        
-        save_dir = str(self.output_path)  
+        """Store the RLDS dataset to disk using TFDS backend writer."""
+        save_dir = str(self.output_path)
 
-        # Create a backend writer
+        # Dataset config for RLDS
         dataset_config = self._get_ds_config()
         writer = tfds_backend_writer.TFDSBackendWriter(
             ds_config=dataset_config,
             data_directory=save_dir,
             split_name=split_name,
-            max_episodes_per_file=100,   # you can adjust this
+            max_episodes_per_file=100,  # adjust if needed
         )
 
         episode_id = 0
         for episode in dataset:
             print(f"Processing episode {episode_id}")
-            from ipdb import set_trace; set_trace()
             steps = episode["steps"]
-
-            # Initialize a new episode
-            ep_writer = writer.new_episode(episode_id=episode_id)
-
-            prev_step = None
+            metadata = episode["episode_metadata"]
+            
+            # Build StepData sequence
             for step in steps:
-                # Convert your dict step into RLDS-compatible StepData
-                s = step_data.StepData(
+                step_obj = step_data.StepData(
                     action=step["action"],
                     timestep=dm_env.TimeStep(
-                        step_type=dm_env.StepType.FIRST if step["is_first"] else (
-                            dm_env.StepType.LAST if step["is_last"] else dm_env.StepType.MID
+                        step_type=(
+                            dm_env.StepType.FIRST
+                            if step["is_first"]
+                            else dm_env.StepType.LAST
+                            if step["is_last"]
+                            else dm_env.StepType.MID
                         ),
                         reward=step["reward"],
-                        # discount=step["discount"],
+                        discount=step["discount"],
                         observation=step["observation"],
                     ),
                 )
-                # Convert to RLDS step dict
-                rlds_step = rlds_utils.to_rlds_step(prev_step, s)
-                ep_writer.add_step(rlds_step)
-                prev_step = s
-
-            ep_writer.end_episode()
+                writer._record_step(step_obj, is_new_episode=step["is_first"])
+            from ipdb import set_trace; set_trace()
+            writer.set_episode_metadata(metadata)
+            writer._write_and_reset_episode()
             episode_id += 1
 
         writer.close()
