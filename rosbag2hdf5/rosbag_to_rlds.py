@@ -67,30 +67,6 @@ class RosbagToRLDS:
             for bag in bag_files:
                 yield self._rosbag_to_episode(bag)
 
-        # output_signature = {
-        #     "steps": tf.data.DatasetSpec(
-        #         element_spec={
-        #             "is_first": tf.TensorSpec((), tf.bool),
-        #             "is_last": tf.TensorSpec((), tf.bool),
-        #             "observation": {
-        #                 k: tf.TensorSpec(shape=self.shape_dict["observation"][k], dtype=tf.float32)
-        #                 for k in self.obs_topics.values()
-        #             },
-        #             "action": tf.TensorSpec(shape=self.shape_dict["action"], dtype=tf.float32),
-        #             "reward": tf.TensorSpec((), tf.float32),
-        #             "discount": tf.TensorSpec((), tf.float32),
-        #             "is_terminal": tf.TensorSpec((), tf.bool),
-        #         }
-        #     ),
-        #     "episode_metadata": {
-        #         "episode_id": tf.TensorSpec((), tf.string),
-        #         "agent_id": tf.TensorSpec((), tf.string),
-        #         "environment_config": tf.TensorSpec((), tf.string),
-        #         "experiment_id": tf.TensorSpec((), tf.string),
-        #         "invalid": tf.TensorSpec((), tf.bool),
-        #     },
-        # }
-
         return iter(episode_gen())
 
     def _determine_shapes(self):
@@ -200,7 +176,7 @@ class RosbagToRLDS:
             ds_config=dataset_config,
             data_directory=save_dir,
             split_name=split_name,
-            max_episodes_per_file=100,  # adjust if needed
+            max_episodes_per_file=1,  # adjust if needed
         )
 
         episode_id = 0
