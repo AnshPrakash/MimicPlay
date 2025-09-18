@@ -274,34 +274,3 @@ if __name__ == "__main__":
     
     converter.store_dataset(dataset)
     
-    # # Process all rosbags in folder
-    # for episode in dataset.take(1):
-    #     for step in episode["steps"].take(3):
-    #         print(step)
-        
-        
-
-
-# import tensorflow as tf
-
-# raw_dataset = tf.data.TFRecordDataset("rlds_dataset/episode_0.tfrecord")
-
-# feature_description = {
-#     "observation": tf.io.VarLenFeature(tf.string),
-#     "action": tf.io.FixedLenFeature([], tf.string),
-#     "is_terminal": tf.io.FixedLenFeature([], tf.int64),
-#     "language_instruction": tf.io.FixedLenFeature([], tf.string),
-# }
-
-# def _parse_fn(example_proto):
-#     parsed = tf.io.parse_single_example(example_proto, feature_description)
-#     action = tf.io.parse_tensor(parsed["action"], out_type=tf.float32)
-#     obs = {}
-#     for i, k in enumerate(["eef_pos", "eef_quat", "gripper_joint_states"]):  # adapt keys
-#         obs[k] = tf.io.parse_tensor(parsed["observation"].values[i], out_type=tf.float32)
-#     return {"observation": obs, "action": action, "is_terminal": parsed["is_terminal"]}
-
-# dataset = raw_dataset.map(_parse_fn)
-
-# for step in dataset.take(3):
-#     print(step)
