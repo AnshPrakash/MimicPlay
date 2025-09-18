@@ -59,6 +59,21 @@ Follow this [tutorial](https://colab.research.google.com/github/google-research/
 
 Check the documentation from [google-deepming/envlogger](https://github.com/google-deepmind/envlogger/tree/main)
 
+## Visualise RLDS record
+
+```
+python -m rosbag2hdf5.visualise_rlds --folder /home/ansh/IROBMAN/code/MimicPlay/rlds_dataset/rlds_20250918_153449/ --plot_3d
+```
+
+or 
+
+```
+python -m rosbag2hdf5.visualise_rlds --folder /home/ansh/IROBMAN/code/MimicPlay/rlds_dataset/rlds_20250918_153449/ 
+```
+
+Check `visualise_rlds.py` for more options to visualise
+
+
 
 
 
