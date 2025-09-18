@@ -67,31 +67,31 @@ class RosbagToRLDS:
             for bag in bag_files:
                 yield self._rosbag_to_episode(bag)
 
-        output_signature = {
-            "steps": tf.data.DatasetSpec(
-                element_spec={
-                    "is_first": tf.TensorSpec((), tf.bool),
-                    "is_last": tf.TensorSpec((), tf.bool),
-                    "observation": {
-                        k: tf.TensorSpec(shape=self.shape_dict["observation"][k], dtype=tf.float32)
-                        for k in self.obs_topics.values()
-                    },
-                    "action": tf.TensorSpec(shape=self.shape_dict["action"], dtype=tf.float32),
-                    "reward": tf.TensorSpec((), tf.float32),
-                    "discount": tf.TensorSpec((), tf.float32),
-                    "is_terminal": tf.TensorSpec((), tf.bool),
-                }
-            ),
-            "episode_metadata": {
-                "episode_id": tf.TensorSpec((), tf.string),
-                "agent_id": tf.TensorSpec((), tf.string),
-                "environment_config": tf.TensorSpec((), tf.string),
-                "experiment_id": tf.TensorSpec((), tf.string),
-                "invalid": tf.TensorSpec((), tf.bool),
-            },
-        }
+        # output_signature = {
+        #     "steps": tf.data.DatasetSpec(
+        #         element_spec={
+        #             "is_first": tf.TensorSpec((), tf.bool),
+        #             "is_last": tf.TensorSpec((), tf.bool),
+        #             "observation": {
+        #                 k: tf.TensorSpec(shape=self.shape_dict["observation"][k], dtype=tf.float32)
+        #                 for k in self.obs_topics.values()
+        #             },
+        #             "action": tf.TensorSpec(shape=self.shape_dict["action"], dtype=tf.float32),
+        #             "reward": tf.TensorSpec((), tf.float32),
+        #             "discount": tf.TensorSpec((), tf.float32),
+        #             "is_terminal": tf.TensorSpec((), tf.bool),
+        #         }
+        #     ),
+        #     "episode_metadata": {
+        #         "episode_id": tf.TensorSpec((), tf.string),
+        #         "agent_id": tf.TensorSpec((), tf.string),
+        #         "environment_config": tf.TensorSpec((), tf.string),
+        #         "experiment_id": tf.TensorSpec((), tf.string),
+        #         "invalid": tf.TensorSpec((), tf.bool),
+        #     },
+        # }
 
-        return tf.data.Dataset.from_generator(episode_gen, output_signature=output_signature)
+        return iter(episode_gen())
 
     def _determine_shapes(self):
         """Determine the shape of the observations and actions by inspecting the data."""
@@ -130,28 +130,33 @@ class RosbagToRLDS:
         with Reader(rosbagfile) as reader:
             for connection, timestamp, rawdata in reader.messages():
                 topic = connection.topic
+
+                # If this topic belongs to obs
                 if topic in self.obs_topics:
                     key = self.obs_topics[topic]
-                    msg = self.typestore.deserialize_ros1(rawdata, connection.msgtype)
-                    arr = msg_to_numpy(msg)
-                    obs_dict[key].append(tf.convert_to_tensor(arr, dtype=tf.float32))
+                    try:
+                        msg = self.typestore.deserialize_ros1(rawdata, connection.msgtype)
+                        obs_dict[key].append(msg_to_numpy(msg))
+                        if key == "gripper_joint_states":
+                            positions = np.array(msg.position)
+                            drift = positions[0]
+                            last_gripper_state = 1 if drift < 0.02 else -1 # if dist < 0.02, assume gripper is closed
+                    except Exception as e:
+                        print(f"[WARN] Skipping obs topic {topic}: {e}")
+                        raise e
 
-                    if key == "gripper_joint_states":
-                        positions = tf.convert_to_tensor(msg.position, dtype=tf.float32)
-                        last_gripper_state = tf.cond(
-                            positions[0] < 0.02,
-                            lambda: tf.constant(1, dtype=tf.int32),
-                            lambda: tf.constant(-1, dtype=tf.int32),
-                        )
-
+                # If this topic belongs to actions
                 if topic in self.action_topics:
-                    msg = self.typestore.deserialize_ros1(rawdata, connection.msgtype)
-                    act = tf.concat(
-                        [tf.convert_to_tensor(msg_to_numpy(msg), dtype=tf.float32),
-                        tf.cast([last_gripper_state], tf.float32)],
-                        axis=0,
-                    )
-                    actions_list.append(act)
+                    try:
+                        msg = self.typestore.deserialize_ros1(rawdata, connection.msgtype)
+                        actions_list.append( 
+                                            np.concatenate([
+                                                msg_to_numpy(msg),
+                                                np.array([last_gripper_state])]) 
+                                            )
+                    except Exception as e:
+                        print(f"[WARN] Skipping action topic {topic}: {e}")
+                        raise
 
         T = len(actions_list)
 
@@ -159,54 +164,31 @@ class RosbagToRLDS:
         step_dicts = []
         for t in range(T):
             step = {
-                "is_first": t == 0,
-                "is_last": t == T - 1,
-                "observation": {k: obs_dict[k][t] for k in obs_dict.keys()},
-                "action": actions_list[t],
-                "reward": 0.0,
-                "discount": 1.0,
-                "is_terminal": t == T - 1,
+                "is_first": np.bool_(t == 0),
+                "is_last": np.bool_(t == T - 1),
+                "observation": {k: np.asarray(obs_dict[k][t], dtype=np.float32) for k in obs_dict.keys()},
+                "action": np.asarray(actions_list[t], dtype=np.float32),
+                "reward": np.float32(0.0),
+                "discount": np.float32(1.0),
+                "is_terminal": np.bool_(t == T - 1),
             }
+
         step_dicts.append(step)
         
         metadata = {
-            "episode_id": tf.constant(str(rosbagfile).encode("utf-8")),
-            "agent_id": tf.constant("robot1"),
-            "environment_config": tf.constant("default"),
-            "experiment_id": tf.constant("exp001"),
-            "invalid": tf.constant(False),
+            "episode_id": str(rosbagfile).encode("utf-8"),
+            "agent_id": "robot1",
+            "environment_config": "default",
+            "experiment_id": "exp001",
+            "invalid": False,
         }
 
-        # wrap into tf.data.Dataset
-        steps_ds = tf.data.Dataset.from_generator(
-            lambda: iter(step_dicts),
-            output_signature={
-                "is_first": tf.TensorSpec((), tf.bool),
-                "is_last": tf.TensorSpec((), tf.bool),
-                "observation": {
-                    k: tf.TensorSpec(shape=self.shape_dict["observation"][k], dtype=tf.float32)
-                    for k in obs_dict.keys()
-                },
-                "action": tf.TensorSpec(shape=self.shape_dict["action"], dtype=tf.float32),
-                "reward": tf.TensorSpec((), tf.float32),
-                "discount": tf.TensorSpec((), tf.float32),
-                "is_terminal": tf.TensorSpec((), tf.bool),
-            },
-        )
         
         return {
-            "steps": steps_ds,
+            "steps": step_dicts,
             "episode_metadata": metadata,
         }
 
-    def store_dataset(self, dataset):
-        """Store the RLDS dataset to disk."""
-        # tf.data.experimental.save(dataset, self.output_path)
-        # tf.data.Dataset.save(dataset, self.output_path)
-        # print(f"[INFO] RLDS dataset saved to {self.output_path}")
-        save_path = str(self.output_path)   # <--- convert Path to str
-        tf.data.Dataset.save(dataset, save_path)
-        print(f"[INFO] RLDS dataset saved to {save_path}")
         
         
     def store_dataset(self, dataset, split_name: str = "train"):
@@ -227,7 +209,6 @@ class RosbagToRLDS:
             print(f"Processing episode {episode_id}")
             steps = episode["steps"]
             metadata = episode["episode_metadata"]
-            
             # Build StepData sequence
             for step in steps:
                 step_obj = step_data.StepData(
@@ -246,7 +227,6 @@ class RosbagToRLDS:
                     ),
                 )
                 writer._record_step(step_obj, is_new_episode=step["is_first"])
-            from ipdb import set_trace; set_trace()
             writer.set_episode_metadata(metadata)
             writer._write_and_reset_episode()
             episode_id += 1
