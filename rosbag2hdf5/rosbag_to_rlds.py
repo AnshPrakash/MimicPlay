@@ -41,23 +41,20 @@ class RosbagToRLDS:
 
         return rlds_base.DatasetConfig(
             name="rosbag_rlds",  # dataset name
-            # observation_info={
-            #     k: tf.TensorSpec(shape=self.shape_dict["observation"][k], dtype=tf.float32)
-            #     for k in self.obs_topics.values()
-                
-            # },
-            # action_info={
-            #     "shape": self.shape_dict["action"],
-            #     "dtype": tf.float32,
-            # },
-            # reward_info={
-            #     "shape": (),
-            #     "dtype": tf.float32,
-            # },
-            # discount_info={
-            #     "shape": (),
-            #     "dtype": tf.float32,
-            # }
+            observation_info={
+                k: tfds.features.Tensor(shape=self.shape_dict["observation"][k], dtype=tf.float32)
+                for k in self.obs_topics.values()
+            },
+            action_info=tfds.features.Tensor(shape=self.shape_dict["action"], dtype=tf.float32),
+            reward_info=tfds.features.Tensor(shape=(), dtype=tf.float32),
+            discount_info=tfds.features.Tensor(shape=(), dtype=tf.float32),
+            episode_metadata_info={
+                "episode_id": tfds.features.Tensor(shape=(), dtype=tf.string),
+                "agent_id": tfds.features.Tensor(shape=(), dtype=tf.string),
+                "environment_config": tfds.features.Tensor(shape=(), dtype=tf.string),
+                "experiment_id": tfds.features.Tensor(shape=(), dtype=tf.string),
+                "invalid": tfds.features.Tensor(shape=(), dtype=tf.bool),
+            },
         )
 
     def build_dataset(self):
