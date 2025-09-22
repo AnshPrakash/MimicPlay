@@ -56,7 +56,6 @@ class RLDSVisualizer:
         from mpl_toolkits.mplot3d import Axes3D
 
         steps = self.episodes[episode_index]
-        from ipdb import set_trace; set_trace()
         obs_array = np.stack([step["observation"][obs_key] for step in steps])
         xyz = obs_array[:, dims[0]], obs_array[:, dims[1]], obs_array[:, dims[2]]
 
