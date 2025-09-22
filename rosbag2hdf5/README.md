@@ -65,6 +65,14 @@ Check the documentation from [google-deepming/envlogger](https://github.com/goog
 python -m rosbag2hdf5.rosbag_to_rlds --folder <path-to-folder-with-rosbags> --config <path to MimicPlay/rosbag2hdf5/config.yaml>
 ```
 
+!! Note: In the `rosbag2hdf5/config.yaml`, include `image` as a substring for the image observation.
+
+**Example**:
+
+```
+/zedB/zed_node_B/left/image_rect_color: agentview_image_2 # back camera
+```
+
 ## Visualise RLDS record
 
 ```
