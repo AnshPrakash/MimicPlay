@@ -59,6 +59,12 @@ Follow this [tutorial](https://colab.research.google.com/github/google-research/
 
 Check the documentation from [google-deepming/envlogger](https://github.com/google-deepmind/envlogger/tree/main)
 
+## Convert to Rosbag to RLDS
+
+```bash
+python -m rosbag2hdf5.rosbag_to_rlds --folder <path-to-folder-with-rosbags> --config <path to MimicPlay/rosbag2hdf5/config.yaml>
+```
+
 ## Visualise RLDS record
 
 ```
@@ -74,6 +80,9 @@ python -m rosbag2hdf5.visualise_rlds --folder /home/ansh/IROBMAN/code/MimicPlay/
 Check `visualise_rlds.py` for more options to visualise
 
 
+## Further future improvements
+
+1. One can convert to [LeRobot format](https://huggingface.co/docs/lerobot/main/porting_datasets_v3)
 
 
 
