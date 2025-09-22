@@ -39,12 +39,23 @@ class RosbagToRLDS:
     def _get_ds_config(self) -> rlds_base.DatasetConfig:
         """Build DatasetConfig based on observation dict keys."""
 
+        observation_info = {}
+        for topic, key in self.obs_topics.items():
+            if "image" in key:  # or check topic path, e.g. "image_rect_color"
+                observation_info[key] = tfds.features.Image(
+                    shape=self.shape_dict["observation"][key],  # (H, W, C)
+                    dtype=tf.uint8,
+                    encoding_format="jpeg",
+                )
+            else:
+                observation_info[key] = tfds.features.Tensor(
+                    shape=self.shape_dict["observation"][key],
+                    dtype=tf.float32,
+                )
+                
         return rlds_base.DatasetConfig(
             name="rosbag_rlds",  # dataset name
-            observation_info={
-                k: tfds.features.Tensor(shape=self.shape_dict["observation"][k], dtype=tf.float32)
-                for k in self.obs_topics.values()
-            },
+            observation_info= observation_info,
             action_info=tfds.features.Tensor(shape=self.shape_dict["action"], dtype=tf.float32),
             reward_info=tfds.features.Tensor(shape=(), dtype=tf.float32),
             discount_info=tfds.features.Tensor(shape=(), dtype=tf.float32),
@@ -139,16 +150,22 @@ class RosbagToRLDS:
         # build per-step dicts
         steps = []
         for t in range(T):
+            obs_step = {}
+            for k in obs_dict.keys():
+                if "image" in k:  # or use your obs_topics mapping to decide
+                    obs_step[k] = np.asarray(obs_dict[k][t], dtype=np.uint8)
+                else:
+                    obs_step[k] = np.asarray(obs_dict[k][t], dtype=np.float32)
+
             step = {
                 "is_first": np.bool_(t == 0),
                 "is_last": np.bool_(t == T - 1),
-                "observation": {k: np.asarray(obs_dict[k][t], dtype=np.float32) for k in obs_dict.keys()},
+                "observation": obs_step,
                 "action": np.asarray(actions_list[t], dtype=np.float32),
                 "reward": np.float32(0.0),
                 "discount": np.float32(1.0),
                 "is_terminal": np.bool_(t == T - 1),
             }
-
             steps.append(step)
         
         metadata = {
@@ -176,7 +193,7 @@ class RosbagToRLDS:
             ds_config=dataset_config,
             data_directory=save_dir,
             split_name=split_name,
-            max_episodes_per_file=1,  # adjust if needed
+            max_episodes_per_file=100,  # adjust if needed
         )
 
         episode_id = 0
