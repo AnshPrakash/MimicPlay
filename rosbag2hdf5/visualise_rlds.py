@@ -33,23 +33,53 @@ class RLDSVisualizer:
             self.episodes.append(steps)
         print(f"Loaded {len(self.episodes)} episodes from TFRecords")
 
-    def plot_observation(self, obs_key, episode_index=0):
-        """Plot a given observation over time for a specific episode"""
+    def plot_observation(self, obs_key, episode_index=0, max_frames=5):
+        """Plot a given observation over time for a specific episode.
+
+        - Numeric obs → line plot over time
+        - Image obs   → show sampled frames
+        """
         if not hasattr(self, "episodes"):
             raise RuntimeError("Episodes not loaded. Call load_episodes() first.")
 
         steps = self.episodes[episode_index]
         obs_array = np.stack([step["observation"][obs_key] for step in steps])
-        time = np.arange(obs_array.shape[0])
 
-        plt.figure(figsize=(12, 6))
-        for i in range(obs_array.shape[1]):
-            plt.plot(time, obs_array[:, i], label=f"{obs_key}[{i}]")
-        plt.xlabel("Timestep")
-        plt.ylabel(obs_key)
-        plt.title(f"Observation: {obs_key} (Episode {episode_index})")
-        plt.legend()
-        plt.show()
+        # Detect image vs numeric: if last dim is 3 or 1 → likely an image
+        if obs_array.ndim >= 3 and obs_array.shape[-1] in (1, 3):
+            # Plot a few frames (equally spaced)
+            num_steps = obs_array.shape[0]
+            frame_indices = np.linspace(0, num_steps - 1, max_frames, dtype=int)
+
+            plt.figure(figsize=(15, 3))
+            for i, idx in enumerate(frame_indices):
+                plt.subplot(1, len(frame_indices), i + 1)
+                img = obs_array[idx]
+                if img.shape[-1] == 1:
+                    img = img.squeeze(-1)  # grayscale
+                    plt.imshow(img, cmap="gray")
+                else:
+                    plt.imshow(img)
+                plt.axis("off")
+                plt.title(f"t={idx}")
+            plt.suptitle(f"Image Observation: {obs_key} (Episode {episode_index})")
+            plt.show()
+
+        else:
+            # Default numeric plot
+            time = np.arange(obs_array.shape[0])
+            plt.figure(figsize=(12, 6))
+            if obs_array.ndim == 1:
+                plt.plot(time, obs_array, label=obs_key)
+            else:
+                for i in range(obs_array.shape[1]):
+                    plt.plot(time, obs_array[:, i], label=f"{obs_key}[{i}]")
+            plt.xlabel("Timestep")
+            plt.ylabel(obs_key)
+            plt.title(f"Observation: {obs_key} (Episode {episode_index})")
+            plt.legend()
+            plt.show()
+
 
     def plot_3d_trajectory(self, obs_key, dims=(0, 1, 2), episode_index=0):
         """Plot 3D trajectory of a given observation key (e.g., end-effector)"""
