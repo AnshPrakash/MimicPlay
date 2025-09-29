@@ -1,0 +1,14 @@
+{
+    "terminal.integrated.profiles.linux": {
+    "conda-env": {
+        // Explicitly point to /bin/bash and tell it to read init_conda.sh as its RC file
+        "path": "/bin/bash",
+        "args": [
+        "--rcfile",
+        "${workspaceFolder}/.vscode/init_conda.sh",
+        "-i"
+        ]
+    }
+    },
+    "terminal.integrated.defaultProfile.linux": "conda-env"
+}

@@ -43,6 +43,7 @@ from robomimic.utils.log_utils import PrintLogger, DataLogger
 from mimicplay.configs import config_factory
 from mimicplay.algo import algo_factory, RolloutPolicy
 from mimicplay.utils.train_utils import get_exp_dir, rollout_with_stats, load_data_for_training
+from libero.libero.envs.regions import *
 
 def train(config, device):
     """
@@ -74,7 +75,7 @@ def train(config, device):
 
     # load basic metadata from training file
     print("\n============= Loaded Environment Metadata =============")
-    env_meta = FileUtils.get_env_metadata_from_dataset(dataset_path=config.train.data)
+    # env_meta = FileUtils.get_env_metadata_from_dataset(dataset_path=config.train.data)
     shape_meta = FileUtils.get_shape_metadata_from_dataset(
         dataset_path=config.train.data,
         all_obs_keys=config.all_obs_keys,
@@ -88,6 +89,7 @@ def train(config, device):
     # create environment
     envs = OrderedDict()
     if config.experiment.rollout.enabled:
+        return ValueError("For real world it should be disabled")
         # create environments for validation runs
         env_names = [env_meta["env_name"]]
 
@@ -248,7 +250,7 @@ def train(config, device):
         video_paths = None
         rollout_check = (epoch % config.experiment.rollout.rate == 0) or (should_save_ckpt and ckpt_reason == "time")
         if config.experiment.rollout.enabled and (epoch > config.experiment.rollout.warmstart) and rollout_check:
-
+            return ValueError("Simulation should be disabled for real world")
             # wrap model as a RolloutPolicy to prepare for rollouts
             rollout_model = RolloutPolicy(model, obs_normalization_stats=obs_normalization_stats)
 
@@ -307,7 +309,7 @@ def train(config, device):
             TrainUtils.save_model(
                 model=model,
                 config=config,
-                env_meta=env_meta,
+                env_meta=None,
                 shape_meta=shape_meta,
                 ckpt_path=os.path.join(ckpt_dir, epoch_ckpt_name + ".pth"),
                 obs_normalization_stats=obs_normalization_stats,

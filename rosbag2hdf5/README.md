@@ -25,3 +25,73 @@ mask: true
 ```bash
 python -m rosbag2hdf5.rosbag2robomimic --folder <folder with rosbag files> --config <path to config file>
 ```
+
+
+
+## RLDS
+
+To read RLDS existing datasets, we can use `tfds` package
+
+
+
+```
+pip install tensorflow-datasets
+pip install envlogger[tfds]
+```
+
+```
+conda create -n rlds python=3.11
+conda activate rlds
+
+pip install rlds[tensorflow]
+pip install tfds-nightly
+pip install envlogger[tfds]
+```
+
+```
+pip install -r requirements_rlds.txt 
+```
+
+
+Follow this [tutorial](https://colab.research.google.com/github/google-research/rlds/blob/main/rlds/examples/rlds_tutorial.ipynb#scrollTo=tErv4WRmgTjE) for performing other transformations to RLDS dataset
+
+**How to read the stored data?**
+
+Check the documentation from [google-deepming/envlogger](https://github.com/google-deepmind/envlogger/tree/main)
+
+## Convert to Rosbag to RLDS
+
+```bash
+python -m rosbag2hdf5.rosbag_to_rlds --folder <path-to-folder-with-rosbags> --config <path to MimicPlay/rosbag2hdf5/config.yaml>
+```
+
+!! Note: In the `rosbag2hdf5/config.yaml`, include `image` as a substring for the image observation.
+
+**Example**:
+
+```
+/zedB/zed_node_B/left/image_rect_color: agentview_image_2 # back camera
+```
+
+## Visualise RLDS record
+
+```
+python -m rosbag2hdf5.visualise_rlds --folder /home/ansh/IROBMAN/code/MimicPlay/rlds_dataset/rlds_20250918_153449/ --plot_3d
+```
+
+or 
+
+```
+python -m rosbag2hdf5.visualise_rlds --folder /home/ansh/IROBMAN/code/MimicPlay/rlds_dataset/rlds_20250918_153449/ 
+```
+
+Check `visualise_rlds.py` for more options to visualise
+
+
+## Further future improvements
+
+1. One can convert to [LeRobot format](https://huggingface.co/docs/lerobot/main/porting_datasets_v3)
+
+
+
+

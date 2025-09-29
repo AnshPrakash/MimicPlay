@@ -43,7 +43,19 @@ class ToRobomimic:
         self.mask_group = self.h5file.create_group("mask")
 
         # Create mask datasets
-        self.mask_group.create_dataset("train" if mask else "valid", shape=(0,), maxshape=(None,), dtype="i8")
+        self.mask_group.create_dataset(
+            "train",
+            shape=(0,),
+            maxshape=(None,),
+            dtype=h5py.string_dtype(encoding="utf-8"),
+        )
+        
+        self.mask_group.create_dataset(
+            "valid",
+            shape=(0,),
+            maxshape=(None,),
+            dtype=h5py.string_dtype(encoding="utf-8")
+        )
 
         # Rosbag deserializer
         self.typestore = get_typestore(Stores.ROS1_NOETIC)
@@ -61,6 +73,7 @@ class ToRobomimic:
 
         # Store obs and actions
         obs_dict = {key: [] for key in self.obs_topics.values()}
+        obs_dict["robot0_eef_quat"] = []  # extra key for quaternion
         actions_list = []
 
         last_gripper_state = -1 #Starting assumed to be gripper state open
@@ -73,7 +86,12 @@ class ToRobomimic:
                     key = self.obs_topics[topic]
                     try:
                         msg = self.typestore.deserialize_ros1(rawdata, connection.msgtype)
-                        obs_dict[key].append(self._msg_to_numpy(msg))
+                        if key == "robot0_eef_pos":
+                            numpy_data = self._msg_to_numpy(msg)
+                            obs_dict[key].append(numpy_data[:3]) # position
+                            obs_dict["robot0_eef_quat"].append(numpy_data[3:])
+                        else:
+                            obs_dict[key].append(self._msg_to_numpy(msg))
                         if key == "gripper_joint_states":
                             positions = np.array(msg.position)
                             drift = positions[0]
@@ -102,16 +120,26 @@ class ToRobomimic:
             obs_group.create_dataset(key, data=np.stack(values))
 
         # Actions
-        demo_group.create_dataset("actions", data=np.stack(actions_list))
+        actions_arr = np.stack(actions_list)
+        actions_dset = demo_group.create_dataset("actions", data=actions_arr)
+        actions_dset.attrs["num_samples"] = actions_arr.shape[0]
+        
 
-        # States (optional – could be some obs concatenation)
-        # demo_group.create_dataset("states", data=...)
+        # Required extra datasets
+        T = actions_arr.shape[0]
+
+        # Attach num_samples to demo group (critical!)
+        demo_group.attrs["num_samples"] = T
 
         # Update mask
-        mask_type = "train" if self.mask else "valid"
+        if self.demo_counter == 0:
+            mask_type = "valid"   # always put demo_0 in valid
+        else:
+            mask_type = "train" if self.mask else "valid"
+            
         dset = self.mask_group[mask_type]
         dset.resize((dset.shape[0] + 1,))
-        dset[-1] = self.demo_counter
+        dset[-1] = demo_name
 
         self.demo_counter += 1
 

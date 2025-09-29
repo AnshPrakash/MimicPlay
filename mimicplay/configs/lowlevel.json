@@ -1,7 +1,7 @@
 {
     "algo_name": "mimicplay",
     "experiment": {
-        "name": "test",
+        "name": "real-robot-lowlevel",
         "validate": true,
         "logging": {
             "terminal_output_to_txt": true,
@@ -21,11 +21,11 @@
         "env": null,
         "additional_envs": null,
         "render": false,
-        "render_video": true,
+        "render_video": false,
         "keep_all_videos": false,
         "video_skip": 5,
         "rollout": {
-            "enabled": true,
+            "enabled": false,
             "n": 10,
             "horizon": 1600,
             "rate": 50,
@@ -51,8 +51,8 @@
         ],
         "goal_mode": "nstep",
         "cuda": true,
-        "batch_size": 32,
-        "num_epochs": 3000,
+        "batch_size": 8,
+        "num_epochs": 1000,
         "seed": 1
     },
     "algo": {
@@ -150,19 +150,19 @@
             "n_head": 4,
             "block_size": 10,
             "gmm_modes": 5,
-            "action_dim": 7,
+            "action_dim": 8,
             "proprio_dim": 7,
             "spatial_softmax_num_kp": 64,
-            "gmm_min_std": 0.0001,
+            "gmm_min_std": 0.01,
             "dropout": 0.1,
-            "trained_highlevel_planner": "checkpoints/highlevel_model_epoch_357_best_validation_-65.05948219299316.pth",
+            "trained_highlevel_planner": "checkpoints/model_epoch_600.pth",
             "eval_goal_img_window": 30,
             "eval_max_goal_img_iter": 5
         },
         "playdata": {
             "enabled": true,
-            "goal_image_range": [100, 200],
-            "eval_goal_gap": 150
+            "goal_image_range": [13, 18],
+            "eval_goal_gap": 15
         }
     },
     "observation": {
@@ -171,11 +171,12 @@
                 "low_dim": [
                     "robot0_eef_pos",
                     "robot0_eef_quat",
-                    "robot0_gripper_qpos"
+                    "gripper_joint_states",
+                    "joint_states"
                 ],
                 "rgb": [
-                    "agentview_image",
-                    "robot0_eye_in_hand_image"
+                    "agentview_image_2",
+                    "agentview_image"
                 ],
                 "depth": [],
                 "scan": []
@@ -217,8 +218,8 @@
                 },
                 "obs_randomizer_class": "CropRandomizer",
                 "obs_randomizer_kwargs": {
-                    "crop_height": 76,
-                    "crop_width": 76,
+                    "crop_height": 324,
+                    "crop_width": 576,
                     "num_crops": 1,
                     "pos_enc": false
                 }
