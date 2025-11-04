@@ -75,7 +75,7 @@ python -m rosbag2hdf5.rosbag_to_rlds --folder <path-to-folder-with-rosbags> --co
 
 ## Visualise RLDS record
 
-```
+```bash
 python -m rosbag2hdf5.visualise_rlds --folder /home/ansh/IROBMAN/code/MimicPlay/rlds_dataset/rlds_20250918_153449/ --plot_3d
 ```
 
@@ -87,6 +87,17 @@ python -m rosbag2hdf5.visualise_rlds --folder /home/ansh/IROBMAN/code/MimicPlay/
 
 Check `visualise_rlds.py` for more options to visualise
 
+## Example training script
+
+Install pytorch
+```
+pip install pytorch
+```
+
+Train with the following:
+```bash
+python -m rosbag2hdf5.example.example_bc_train --folder /home/ansh/IROBMAN/code/MimicPlay/rlds_dataset/rlds_20251029_111900 --obs_key robot0_eef_pos
+```
 
 ## Further future improvements
 
